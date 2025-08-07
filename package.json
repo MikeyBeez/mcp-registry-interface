@@ -1,7 +1,7 @@
 {
-  "name": "mcp-registry-interface",
-  "version": "0.1.0",
-  "description": "MCP server for interfacing with the official Model Context Protocol registry - enables Claude to discover, browse, search, and manage MCP servers dynamically",
+  "name": "@mcp-community/registry-interface",
+  "version": "1.0.0",
+  "description": "MCP server for discovering and browsing Model Context Protocol servers from GitHub. Search, categorize, and get installation info for MCP tools.",
   "main": "src/index.js",
   "bin": {
     "mcp-registry-interface": "src/index.js"
@@ -9,16 +9,21 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node src/index.js",
-    "test": "echo \"Add tests here\" && exit 0",
-    "lint": "echo \"Add linting here\" && exit 0"
+    "test": "node static-test.js",
+    "lint": "echo \"No linting configured\"",
+    "prepublish": "npm test"
   },
   "keywords": [
     "mcp",
-    "model-context-protocol", 
-    "registry",
+    "model-context-protocol",
+    "registry", 
+    "discovery",
     "ai",
     "tools",
-    "claude"
+    "claude",
+    "anthropic",
+    "github-api",
+    "server-discovery"
   ],
   "author": "MCP Community",
   "license": "MIT",
@@ -30,10 +35,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/username/mcp-registry-interface.git"
+    "url": "https://github.com/mcp-community/registry-interface.git"
   },
   "bugs": {
-    "url": "https://github.com/username/mcp-registry-interface/issues"
+    "url": "https://github.com/mcp-community/registry-interface/issues"
   },
-  "homepage": "https://github.com/username/mcp-registry-interface#readme"
+  "homepage": "https://github.com/mcp-community/registry-interface#readme",
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE"
+  ]
 }
