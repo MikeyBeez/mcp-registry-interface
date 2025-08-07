@@ -1,0 +1,39 @@
+{
+  "name": "mcp-registry-interface",
+  "version": "0.1.0",
+  "description": "MCP server for interfacing with the official Model Context Protocol registry - enables Claude to discover, browse, search, and manage MCP servers dynamically",
+  "main": "src/index.js",
+  "bin": {
+    "mcp-registry-interface": "src/index.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node src/index.js",
+    "test": "echo \"Add tests here\" && exit 0",
+    "lint": "echo \"Add linting here\" && exit 0"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol", 
+    "registry",
+    "ai",
+    "tools",
+    "claude"
+  ],
+  "author": "MCP Community",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/mcp-registry-interface.git"
+  },
+  "bugs": {
+    "url": "https://github.com/username/mcp-registry-interface/issues"
+  },
+  "homepage": "https://github.com/username/mcp-registry-interface#readme"
+}
