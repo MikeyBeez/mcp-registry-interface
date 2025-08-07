@@ -232,6 +232,56 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ['serverId']
         }
+      },
+      {
+        name: 'registry_submit_server',
+        description: 'Submit/register a new MCP server to the registry',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', description: 'Server name (must be unique)' },
+            description: { type: 'string', description: 'Brief description of functionality' },
+            repository: { type: 'string', description: 'GitHub repository URL' },
+            category: { type: 'string', description: 'Server category (filesystem, database, etc.)' },
+            version: { type: 'string', description: 'Version string (e.g., "0.1.0")', default: '0.1.0' },
+            tags: { type: 'array', items: { type: 'string' }, description: 'Tags for categorization' },
+            author: { type: 'string', description: 'Author name or organization' },
+            license: { type: 'string', description: 'License type (e.g., MIT)', default: 'MIT' },
+            installation: {
+              type: 'object',
+              properties: {
+                npm: { type: 'string', description: 'NPM installation command' },
+                docker: { type: 'string', description: 'Docker run command' }
+              }
+            }
+          },
+          required: ['name', 'description', 'repository', 'category']
+        }
+      },
+      {
+        name: 'registry_update_server',
+        description: 'Update an existing server registration',
+        inputSchema: {
+          type: 'object', 
+          properties: {
+            serverId: { type: 'string', description: 'Server ID to update' },
+            updates: {
+              type: 'object',
+              properties: {
+                description: { type: 'string' },
+                version: { type: 'string' },
+                tags: { type: 'array', items: { type: 'string' } },
+                installation: { type: 'object' }
+              }
+            }
+          },
+          required: ['serverId', 'updates']
+        }
+      },
+      {
+        name: 'registry_list_my_servers',
+        description: 'List servers you have submitted to the registry',
+        inputSchema: { type: 'object', properties: {} }
       }
     ],
   };
@@ -266,6 +316,94 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           text += `\n💡 Use \`registry_get_server_details\` for installation info.`;
         } else {
           text += `No servers found.`;
+        }
+        
+        return { content: [{ type: 'text', text }] };
+      }
+
+      case 'registry_submit_server': {
+        const { name, description, repository, category, version = '0.1.0', tags = [], author, license = 'MIT', installation } = args;
+        
+        if (!name || !description || !repository || !category) {
+          throw new Error('Missing required fields: name, description, repository, category');
+        }
+        
+        const serverData = {
+          name,
+          description,
+          repository: { url: repository, type: 'github' },
+          category,
+          version,
+          tags,
+          author: author || 'Community',
+          license,
+          installation: installation || {
+            npm: `npx ${name}`,
+            docker: `docker run mcp/${name.replace('mcp-', '')}`
+          }
+        };
+        
+        const result = await makeRegistryRequest('/servers', {
+          method: 'POST',
+          requiresAuth: true,
+          body: JSON.stringify(serverData)
+        });
+        
+        if (result.error) {
+          return { content: [{ type: 'text', text: `❌ Failed to submit server: ${result.error}` }] };
+        }
+        
+        let text = `✅ **Server Submitted Successfully!**\n\n`;
+        text += `📦 **${name}** (v${version})\n`;
+        text += `📝 ${description}\n`;
+        text += `🏷️ Category: ${category}\n`;
+        text += `🔗 Repository: ${repository}\n\n`;
+        text += `🎉 Your server is now available in the MCP registry!\n`;
+        text += `🔄 It may take a few minutes to appear in search results.`;
+        
+        return { content: [{ type: 'text', text }] };
+      }
+
+      case 'registry_update_server': {
+        const { serverId, updates } = args;
+        
+        if (!serverId || !updates) {
+          throw new Error('serverId and updates are required');
+        }
+        
+        const result = await makeRegistryRequest(`/servers/${serverId}`, {
+          method: 'PUT',
+          requiresAuth: true,
+          body: JSON.stringify(updates)
+        });
+        
+        if (result.error) {
+          return { content: [{ type: 'text', text: `❌ Failed to update server: ${result.error}` }] };
+        }
+        
+        let text = `✅ **Server Updated Successfully!**\n\n`;
+        text += `📦 **${serverId}** has been updated\n`;
+        text += `🔄 Changes may take a few minutes to appear.`;
+        
+        return { content: [{ type: 'text', text }] };
+      }
+
+      case 'registry_list_my_servers': {
+        const result = await makeRegistryRequest('/servers/mine', {
+          requiresAuth: true
+        });
+        
+        let text = `📋 **Your Registered Servers**\n\n`;
+        
+        if (result.servers && result.servers.length > 0) {
+          result.servers.forEach((server, i) => {
+            text += `**${i + 1}. ${server.name}** (v${server.version})\n`;
+            text += `   📝 ${server.description}\n`;
+            text += `   📊 ${server.downloads || 0} downloads | ⭐ ${server.stars || 0} stars\n\n`;
+          });
+        } else {
+          text += `No servers registered yet.\n\n`;
+          text += `💡 Use \`registry_submit_server\` to register your MCP servers!`;
         }
         
         return { content: [{ type: 'text', text }] };
